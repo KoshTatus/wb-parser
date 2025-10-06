@@ -13,4 +13,3 @@ class Product(Base):
     rating: Mapped[float] = mapped_column()
     review_count: Mapped[int] = mapped_column()
     remaining_count: Mapped[int] = mapped_column()
-

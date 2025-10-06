@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
+from src.database.models import Base
 from src.settings import settings
 
 db_name = settings.db_name
@@ -13,6 +14,9 @@ DATABASE_URL = f"postgresql+psycopg2://{db_user}:{db_password}@{db_host}:{db_por
 engine = create_engine(DATABASE_URL)
 
 local_session = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+
+def create_tables():
+    Base.metadata.create_all(engine)
 
 def get_db():
     db = local_session()
