@@ -1,0 +1,42 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: postgres_db
+    environment:
+      POSTGRES_HOST: ${DB_HOST}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-network # Добавляем сервис в общую сеть
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    environment:
+      DB_HOST: db # Используем имя сервиса (db) вместо localhost или IP
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+    ports:
+      - "5000:5000"
+    depends_on:
+      - db
+    networks:
+      - app-network # Добавляем сервис в общую сеть
+
+volumes:
+  postgres_data:
+
+networks:
+  app-network: # Определяем пользовательскую сеть
+    driver: bridge
