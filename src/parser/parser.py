@@ -1,11 +1,10 @@
 import requests
 
 from src.app.schemas import ProductCreateSchema
-from src.database.models import Product
 
 BASE_URL = "https://search.wb.ru/exactmatch/ru/common/v18/search"
 
-def get_products(query: str):
+def parse_products_from_wb(query: str):
     params = {
         "appType": 1,
         "query": query,
