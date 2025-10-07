@@ -1,10 +1,17 @@
-import requests
+import aiohttp, asyncio
 
 from src.app.schemas import ProductCreateSchema
 
 BASE_URL = "https://search.wb.ru/exactmatch/ru/common/v18/search"
 
-def parse_products_from_wb(query: str):
+async def get_data(
+    params: dict = None,
+):
+    async with aiohttp.ClientSession() as session:
+        response = await session.get(BASE_URL, params=params)
+        return await response.json(content_type=None)
+
+async def parse_products_from_wb(query: str):
     params = {
         "appType": 1,
         "query": query,
@@ -16,14 +23,20 @@ def parse_products_from_wb(query: str):
     }
 
     try:
+        tasks = []
         products = []
 
         for page in range(1, 51):
             params["page"] = str(page)
-            response = requests.get(BASE_URL, params=params)
-            response.raise_for_status()
-            data = response.json()
+            tasks.append(
+                asyncio.create_task(
+                    get_data(params=params)
+                )
+            )
 
+        result_list = await asyncio.gather(*tasks)
+
+        for data in result_list:
             for item in data.get("products", []):
                 price = item.get("sizes")
                 price = price[0]
@@ -40,7 +53,5 @@ def parse_products_from_wb(query: str):
 
         return products
 
-    except requests.exceptions.RequestException as e:
-        print(f"Ошибка при выполнении запроса: {e}")
-        return []
-
+    except aiohttp.ClientError as e:
+        print(e)

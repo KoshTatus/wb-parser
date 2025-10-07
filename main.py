@@ -1,8 +1,8 @@
 import uvicorn
+import asyncio
 from fastapi import FastAPI, Query
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
-
 from src.dao.dao import ProductDAO
 from src.database.database import get_db, create_tables
 from src.parser.parser import parse_products_from_wb
@@ -28,7 +28,7 @@ def get_products(title = Query(default=""), db: Session = Depends(get_db)):
 
 @app.post("/products")
 def parse_products(query = Query(default="термопаста"), db: Session = Depends(get_db)):
-    result = parse_products_from_wb(query=query)
+    result = asyncio.run(parse_products_from_wb(query=query))
 
     ProductDAO.add_products(db, result)
 
